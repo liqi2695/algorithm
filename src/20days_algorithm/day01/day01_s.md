@@ -1,0 +1,167 @@
+#### [704. 二分查找](https://leetcode-cn.com/problems/binary-search/)
+
+思考：
+
+主要就是二分的使用，两种方法，while循环以及递归使用。
+
+代码：
+
+```c++
+//while循环
+class Solution {
+public:
+
+    int search(vector<int>& nums, int target) {
+        if(nums.size() == 0) return -1;
+        int left = 0, right = nums.size() - 1;
+        while(left < right){
+            int mid = left + (right - left) >> 1;
+            if(nums[mid] == target) return mid;
+            if(nums[mid] < target) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+        return -1;
+    }
+
+};
+
+//递归
+class Solution {
+public:
+
+    int search(vector<int>& nums, int target) {
+        int left = 0, right = nums.size() - 1;
+        return search_help(nums,left,right,target);
+    }
+    int search_help(vector<int>& nums,int left,int right,int target){
+        int mid = left + (right - left) / 2;
+        if(left <= right){
+            if(nums[mid] == target) return mid;
+            if(nums[mid] < target){
+                return search_help(nums,mid+1,right,target);
+            } else {
+                return search_help(nums,left,mid-1,target);
+            }
+        } else {
+            return -1;
+        }
+    }
+};
+```
+
+
+
+
+
+#### [278. 第一个错误的版本](https://leetcode-cn.com/problems/first-bad-version/)
+
+解题思考：
+
+为了实现更少的调用isBadVersion，那么就可以考虑用二分的方法；从1到n，不妨比作从left到right，那么每次去中间值mid，再判断isBadVersion(mid),而此时isBadVersion(mid)只有两种结果，再分类讨论，有以下几种情况：
+
+* isBadVersion(mid) == false 此时mid为正确版本，并且<=mid的部分都为正确，只用讨论>mid的 部分
+  * 如果mid == n。则整个版本无错误，返回-1
+  * 如果isBadVersion(mid+1) == true，则证明mid+1就是错误的第一个版本
+  * 如果isBadVersion(mid+1) == false,则错误版本的第一个肯定在区间(mid+2,right)之间
+* isBadVersion(mid) == true 此时mid为错误版本，并且>=mid部分都错误
+  * 如果mid-1 == 0 则整个版本从1就开始错误，返回1
+  * 如果isBadVersion(mid-1) == false，则mid就是错误的第一个版本
+  * 如果isBadVersion(mid-1) == true，错误版本的第一个肯定在区间(left,mid-1)之间
+
+代码实现：
+
+```cc
+// The API isBadVersion is defined for you.
+// bool isBadVersion(int version);
+
+class Solution {
+public:
+    int firstBadVersion(int n) {
+        int left = 1, right = n;
+        while(left <= right){
+            int mid = left + (right - left) / 2;
+            if(isBadVersion(mid) == true){
+                if( (mid-1 == 0) || isBadVersion(mid-1) == false)
+                    return mid;
+                if(isBadVersion(mid-1) == true)
+                    right = mid - 1;
+            } 
+            if(isBadVersion(mid) == false){
+                //还可加一个判断，就是没有出错的版本
+                if(mid == n) return -1;
+                if(isBadVersion(mid+1) == true)
+                    return mid+1;
+                if(isBadVersion(mid+1) == false)
+                    left = mid + 2;
+            }
+        }
+        return -1;
+    }
+};
+```
+
+
+
+
+
+#### [35. 搜索插入位置](https://leetcode-cn.com/problems/search-insert-position/)
+
+
+
+解题思考：
+
+想当于将一二的一个结合体
+
+
+
+代码实现：
+
+```cc
+class Solution {
+private:
+    vector<int> help;
+public:
+    int searchInsert(vector<int>& nums, int target) {
+        if(nums.size() == 0) return 0;
+        int left = 0, right = nums.size() - 1;
+        int temp = 0;
+        //这是可以找到的情况
+        if((temp = search(nums,left,right,target)) != -1)
+            return temp;
+        else{ 
+            //这是不可以找到的情况，需要找插入下标
+            while(left <= right){
+                int mid = left + (right - left) / 2;
+                if(nums[mid] < target){
+                    if(mid == nums.size()-1 || nums[mid+1] > target)
+                        return mid+1;
+                    if(nums[mid+1] < target)
+                        left = mid + 1;
+                }
+                if(nums[mid] > target){
+                    if(mid == 0 || nums[mid-1] < target) return mid;
+                    if(nums[mid-1] > target)
+                        right = mid - 1;
+                }
+            }
+            return -1;
+        } 
+    }
+    int search(vector<int>& nums,int left,int right,int target){
+        int mid = left + (right - left) / 2;
+        if(left <= right){
+            if(nums[mid] == target) return mid;
+            if(nums[mid] < target) 
+                return search(nums,mid+1,right,target);
+            if(nums[mid] > target)
+                return search(nums,left,mid-1,target);
+        } 
+        return -1;
+    }
+
+};
+```
+
